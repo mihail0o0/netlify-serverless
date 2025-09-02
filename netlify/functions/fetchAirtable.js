@@ -7,7 +7,7 @@ export const handler = async () => {
     "pathxuJGghrYvGJj4.61ae89c2cb92e985809f20fd96bd79d35b2b6590fb63f97059f04f4f6bd2fc03";
   const URL = "https://api.airtable.com/v0";
 
-  const BASE_ID = "appEgHRWQsvF5F7pL/tblChiOS40d8z752f";
+  const BASE_ID = "appEgHRWQsvF5F7pL";
   const TABLE_NAME = "tblChiOS40d8z752f";
 
   const getImages = `${URL}/${BASE_ID}/${TABLE_NAME}`;
