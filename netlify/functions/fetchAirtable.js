@@ -1,3 +1,5 @@
+import fetch from "node-fetch";
+
 export const handler = async () => {
   const API_KEY =
     "pathxuJGghrYvGJj4.61ae89c2cb92e985809f20fd96bd79d35b2b6590fb63f97059f04f4f6bd2fc03";
@@ -26,12 +28,3 @@ export const handler = async () => {
     }),
   };
 };
-
-document.addEventListener("DOMContentLoaded", () => {
-  const fetchBtn = document.getElementById("fetch-btn");
-  const responseText = document.getElementById("response-output");
-
-  fetchBtn.addEventListener("click", () => {
-    handler();
-  });
-});
