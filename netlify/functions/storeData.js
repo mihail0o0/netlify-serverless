@@ -43,6 +43,17 @@ export const handler = async (event) => {
       format: "a4",
     });
 
+    return {
+      statusCode: 200,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ success: true, data: images}),
+    };
+
     for (let i = 0; i < images.length; i++) {
       const img = images[i];
 
