@@ -44,16 +44,15 @@ export const handler = async (event) => {
     doc.on("end", () => resolve(Buffer.concat(chunks)));
   });
 
+  const form = new FormData();
+  form.append("fields[GeneratedPDF]", pdfBuffer, { filename: "output.pdf" });
+
   const response = await fetch(fullUrl, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${API_KEY}`,
     },
-    body: (() => {
-      const form = new FormData();
-      form.append("file", pdfBuffer, "test.pdf");
-      return form;
-    })(),
+    body: form,
   });
   const data = await response.json();
 
@@ -62,9 +61,8 @@ export const handler = async (event) => {
     headers: {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Headers": "Content-Type",
+      "Content-Type": "application/json",
     },
-    body: (() => {
-      return "OK";
-    })(),
+    body: JSON.stringify({ success: true, airtableResponse: data }),
   };
 };
