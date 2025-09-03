@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-import jsPDF from "jspdf"; 
+import jsPDF from "jspdf";
 import FormData from "form-data";
 
 export const handler = async (event) => {
@@ -31,16 +31,15 @@ export const handler = async (event) => {
       throw new Error("No images provided or invalid images array");
     }
 
-    
     const doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",
-      format: "a4"
+      format: "a4",
     });
 
     for (let i = 0; i < images.length; i++) {
       const img = images[i];
-      
+
       if (i > 0) {
         doc.addPage();
       }
@@ -51,7 +50,7 @@ export const handler = async (event) => {
           x: (210 - 150) / 2,
           y: (297 - 150) / 2,
           width: 150,
-          height: 150
+          height: 150,
         });
       } catch (imageError) {
         console.warn(`Failed to add image ${i + 1}:`, imageError.message);
@@ -59,24 +58,36 @@ export const handler = async (event) => {
       }
     }
 
-    const pdfBase64 = doc.output('datauristring').split(',')[1];
+    const pdfBlob = doc.output("blob");
+
+    const formData = new FormData();
+    formData.append("file", pdfBlob, "output.pdf");
+    formData.append("upload_preset", "unsigned_preset"); 
+    formData.append("cloud_name", "db6hiugnp"); 
+
+    const cloudRes = await fetch(
+      "https://api.cloudinary.com/v1_1/db6hiugnp/auto/upload",
+      { method: "POST", body: formData }
+    );
+
+    const pdfUrl = JSON.parse(cloudRes).url;
     
     // Prepare data for Airtable in the correct format
     const airtableData = {
       records: [
         {
           fields: {
-            "Attachments": [
+            Attachments: [
               {
-                "url": `data:application/pdf;base64,${pdfBase64}`,
-                "filename": "generated-document.pdf"
-              }
+                url: `${pdfUrl}`,
+                filename: "generated-document.pdf",
+              },
             ],
-            "NumberOfImages": images.length,
-            "GeneratedAt": new Date().toISOString()
-          }
-        }
-      ]
+            NumberOfImages: images.length,
+            GeneratedAt: new Date().toISOString(),
+          },
+        },
+      ],
     };
 
     const response = await fetch(fullUrl, {
