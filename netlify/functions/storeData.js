@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
 import PDFDocument from "pdfkit";
+import FormData from "form-data";
 
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
@@ -23,7 +24,7 @@ export const handler = async (event) => {
 
   const fullUrl = `${URL}/${BASE_ID}/${TABLE_NAME}`;
 
-  const images = event.body;
+  const { images } = JSON.parse(event.body);
 
   const doc = new PDFDocument({ autoFirstPage: false });
   const chunks = [];
@@ -60,7 +61,8 @@ export const handler = async (event) => {
     statusCode: 200,
     headers: {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Headers": "Content-Type, Authorization",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ success: true, airtableResponse: data }),
