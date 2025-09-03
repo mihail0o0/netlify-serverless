@@ -58,10 +58,10 @@ export const handler = async (event) => {
       }
     }
 
-    const pdfBlob = doc.output("blob");
+    const pdfBuffer = Buffer.from(doc.output("arraybuffer"));
 
     const formData = new FormData();
-    formData.append("file", pdfBlob, "output.pdf");
+    formData.append("file", pdfBuffer, { filename: "output.pdf", contentType: "application/pdf" });
     formData.append("upload_preset", "unsigned_preset"); 
     formData.append("cloud_name", "db6hiugnp"); 
 
