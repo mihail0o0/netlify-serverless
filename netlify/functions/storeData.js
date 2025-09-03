@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-import PDFDocument from "pdfkit/js/pdfkit.standalone";
+import jsPDF from "jspdf"; 
 import FormData from "form-data";
 
 export const handler = async (event) => {
@@ -31,43 +31,48 @@ export const handler = async (event) => {
       throw new Error("No images provided or invalid images array");
     }
 
-    const doc = new PDFDocument({ autoFirstPage: false });
-    const chunks = [];
-
-    doc.on("data", (chunk) => chunks.push(chunk));
-
-    for (const img of images) {
-      doc.addPage({
-        size: [612, 792],
-        margins: {
-          top: 72,
-          bottom: 72,
-          left: 72,
-          right: 72,
-        },
-      });
-
-      doc.image(img, {
-        fit: [468, 468],
-        align: "center",
-        valign: "center",
-      });
-    }
-
-    doc.end();
-
-    const pdfBuffer = await new Promise((resolve, reject) => {
-      doc.on("end", () => {
-        resolve(Buffer.concat(chunks));
-      });
-      doc.on("error", reject);
+    
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4"
     });
 
+    // Process each image
+    for (let i = 0; i < images.length; i++) {
+      const img = images[i];
+      
+      // Add new page for each image (except the first one)
+      if (i > 0) {
+        doc.addPage();
+      }
+
+      try {
+        // Add image to PDF (centered, 150mm width)
+        doc.addImage({
+          imageData: img,
+          x: (210 - 150) / 2, // Center horizontally (A4 width: 210mm)
+          y: (297 - 150) / 2, // Center vertically (A4 height: 297mm)
+          width: 150,
+          height: 150
+        });
+      } catch (imageError) {
+        console.warn(`Failed to add image ${i + 1}:`, imageError.message);
+        // Add error message instead
+        doc.text(`Failed to load image ${i + 1}`, 20, 20);
+      }
+    }
+
+    // Generate PDF as buffer
+    const pdfBuffer = Buffer.from(doc.output('arraybuffer'));
+
+    // Create form data for Airtable
     const form = new FormData();
     form.append("fields[GeneratedPDF]", pdfBuffer, {
       filename: "output.pdf",
       contentType: "application/pdf",
     });
+
 
     const formHeaders = form.getHeaders();
 
