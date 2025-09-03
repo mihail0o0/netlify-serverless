@@ -2,6 +2,12 @@ import fetch from "node-fetch";
 import jsPDF from "jspdf";
 import FormData from "form-data";
 
+async function urlToBase64(url) {
+  const res = await fetch(url);
+  const buffer = await res.arrayBuffer();
+  return Buffer.from(buffer).toString("base64");
+}
+
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
     return {
@@ -45,8 +51,9 @@ export const handler = async (event) => {
       }
 
       try {
+        const base64Img = urlToBase64(img);
         doc.addImage({
-          imageData: img,
+          imageData: `data:image/jpeg;base64,${base64Img}`,
           x: (210 - 150) / 2,
           y: (297 - 150) / 2,
           width: 150,
