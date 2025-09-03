@@ -38,51 +38,54 @@ export const handler = async (event) => {
       format: "a4"
     });
 
-    // Process each image
     for (let i = 0; i < images.length; i++) {
       const img = images[i];
       
-      // Add new page for each image (except the first one)
       if (i > 0) {
         doc.addPage();
       }
 
       try {
-        // Add image to PDF (centered, 150mm width)
         doc.addImage({
           imageData: img,
-          x: (210 - 150) / 2, // Center horizontally (A4 width: 210mm)
-          y: (297 - 150) / 2, // Center vertically (A4 height: 297mm)
+          x: (210 - 150) / 2,
+          y: (297 - 150) / 2,
           width: 150,
           height: 150
         });
       } catch (imageError) {
         console.warn(`Failed to add image ${i + 1}:`, imageError.message);
-        // Add error message instead
         doc.text(`Failed to load image ${i + 1}`, 20, 20);
       }
     }
 
-    // Generate PDF as buffer
-    const pdfBuffer = Buffer.from(doc.output('arraybuffer'));
-
-    // Create form data for Airtable
-    const form = new FormData();
-    form.append("fields[GeneratedPDF]", pdfBuffer, {
-      filename: "output.pdf",
-      contentType: "application/pdf",
-    });
-
-
-    const formHeaders = form.getHeaders();
+    const pdfBase64 = doc.output('datauristring').split(',')[1];
+    
+    // Prepare data for Airtable in the correct format
+    const airtableData = {
+      records: [
+        {
+          fields: {
+            "GeneratedPDF": [
+              {
+                "url": `data:application/pdf;base64,${pdfBase64}`,
+                "filename": "generated-document.pdf"
+              }
+            ],
+            "NumberOfImages": images.length,
+            "GeneratedAt": new Date().toISOString()
+          }
+        }
+      ]
+    };
 
     const response = await fetch(fullUrl, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${API_KEY}`,
-        ...formHeaders,
+        "Content-Type": "application/json",
       },
-      body: form,
+      body: JSON.stringify(airtableData),
     });
 
     if (!response.ok) {
