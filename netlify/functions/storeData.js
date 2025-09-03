@@ -83,7 +83,7 @@ export const handler = async (event) => {
 
     const cloudData = await cloudRes.json();
 
-    const pdfUrl = cloudData.res;
+    const pdfUrl = cloudData.secure_url;
 
     const airtableData = {
       records: [
