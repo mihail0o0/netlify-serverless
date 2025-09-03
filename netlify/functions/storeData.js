@@ -1,5 +1,5 @@
 import fetch from "node-fetch";
-import PDFDocument from "pdfkit";
+import PDFDocument from "pdfkit/js/pdfkit.standalone.js";
 import FormData from "form-data";
 
 export const handler = async (event) => {
