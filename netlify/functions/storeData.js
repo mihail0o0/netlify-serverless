@@ -77,7 +77,7 @@ export const handler = async (event) => {
     formData.append("cloud_name", "db6hiugnp");
 
     const cloudRes = await fetch(
-      "https://api.cloudinary.com/v1_1/db6hiugnp/raw/upload",
+      "https://api.cloudinary.com/v1_1/db6hiugnp/auto/upload",
       { method: "POST", body: formData }
     );
 
