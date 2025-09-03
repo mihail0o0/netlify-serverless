@@ -40,6 +40,7 @@ export const handler = async (event) => {
       valign: "center",
     });
   });
+  doc.end();
 
   const pdfBuffer = await new Promise((resolve) => {
     doc.on("end", () => resolve(Buffer.concat(chunks)));
