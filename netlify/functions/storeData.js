@@ -66,7 +66,7 @@ export const handler = async (event) => {
       records: [
         {
           fields: {
-            "GeneratedPDF": [
+            "Attachments": [
               {
                 "url": `data:application/pdf;base64,${pdfBase64}`,
                 "filename": "generated-document.pdf"
