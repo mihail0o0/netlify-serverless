@@ -1,7 +1,6 @@
 import fetch from "node-fetch";
 import PDFDocument from "pdfkit/js/pdfkit.standalone";
 import FormData from "form-data";
-import fs from "fs";
 
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
