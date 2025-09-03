@@ -28,6 +28,7 @@ export const handler = async (event) => {
     const { images } = JSON.parse(event.body);
 
     const doc = new PDFDocument({ autoFirstPage: false });
+    doc.registerFont("dummy", Buffer.from(""));
     doc.font("Times-Roman");
     const chunks = [];
 
