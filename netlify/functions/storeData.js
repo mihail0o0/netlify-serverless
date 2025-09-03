@@ -26,39 +26,67 @@ export const handler = async (event) => {
 
   try {
     const { images } = JSON.parse(event.body);
+    
+    if (!images || !Array.isArray(images) || images.length === 0) {
+      throw new Error("No images provided or invalid images array");
+    }
 
     const doc = new PDFDocument({ autoFirstPage: false });
-    doc.registerFont("dummy", Buffer.from(""));
-    doc.font("Times-Roman");
     const chunks = [];
 
     doc.on("data", (chunk) => chunks.push(chunk));
-    doc.on("end", () => {});
+    
+    doc.font('Times-Roman');
 
-    images.forEach((img) => {
-      doc.addPage();
-      doc.image(img, {
-        fit: [400, 400],
-        align: "center",
-        valign: "center",
+    for (const img of images) {
+      doc.addPage({
+        size: [612, 792],
+        margins: {
+          top: 72,
+          bottom: 72,
+          left: 72,
+          right: 72
+        }
       });
-    });
+      
+      doc.image(img, {
+        fit: [468, 468],
+        align: "center",
+        valign: "center"
+      });
+    }
+
     doc.end();
 
-    const pdfBuffer = await new Promise((resolve) => {
-      doc.on("end", () => resolve(Buffer.concat(chunks)));
+    const pdfBuffer = await new Promise((resolve, reject) => {
+      doc.on("end", () => {
+        resolve(Buffer.concat(chunks));
+      });
+      doc.on("error", reject);
     });
 
     const form = new FormData();
-    form.append("fields[GeneratedPDF]", pdfBuffer, { filename: "output.pdf" });
+    form.append("fields[GeneratedPDF]", pdfBuffer, {
+      filename: "output.pdf",
+      contentType: "application/pdf"
+    });
+
+    const formHeaders = form.getHeaders();
 
     const response = await fetch(fullUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${API_KEY}`,
+        "Authorization": `Bearer ${API_KEY}`,
+        ...formHeaders
       },
-      body: form,
+      body: form
     });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Airtable API error: ${response.status} - ${errorText}`);
+    }
+
     const data = await response.json();
 
     return {
@@ -72,6 +100,8 @@ export const handler = async (event) => {
       body: JSON.stringify({ success: true, airtableResponse: data }),
     };
   } catch (error) {
+    console.error("Error:", error);
+    
     return {
       statusCode: 400,
       headers: {
@@ -80,7 +110,9 @@ export const handler = async (event) => {
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ success: false, error: error }),
+      body: JSON.stringify({ success: false, error: error.message }),
     };
   }
+};
+
 };
