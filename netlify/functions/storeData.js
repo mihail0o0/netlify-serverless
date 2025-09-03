@@ -51,17 +51,8 @@ export const handler = async (event) => {
       }
 
       try {
-        const base64Img = urlToBase64(img);
-        return {
-          statusCode: 200,
-          headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers": "Content-Type",
-            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ success: true, data: base64Img }),
-        };
+        const base64Img = await urlToBase64(img);
+        
         doc.addImage({
           imageData: `data:image/jpeg;base64,${base64Img}`,
           x: (210 - 150) / 2,
