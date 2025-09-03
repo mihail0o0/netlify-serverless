@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/mihail0o0/netlify-serverless#readme",
   "dependencies": {
-    "node-fetch": "^3.3.2"
+    "fs": "^0.0.1-security",
+    "node-fetch": "^3.3.2",
+    "pdfkit": "^0.17.2"
   }
 }
