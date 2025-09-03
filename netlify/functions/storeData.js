@@ -8,7 +8,7 @@ export const handler = async (event) => {
       statusCode: 200,
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Headers": "Content-Type",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       },
       body: "OK",
@@ -26,7 +26,7 @@ export const handler = async (event) => {
 
   try {
     const { images } = JSON.parse(event.body);
-    
+
     if (!images || !Array.isArray(images) || images.length === 0) {
       throw new Error("No images provided or invalid images array");
     }
@@ -35,8 +35,6 @@ export const handler = async (event) => {
     const chunks = [];
 
     doc.on("data", (chunk) => chunks.push(chunk));
-    
-    doc.font('Times-Roman');
 
     for (const img of images) {
       doc.addPage({
@@ -45,14 +43,14 @@ export const handler = async (event) => {
           top: 72,
           bottom: 72,
           left: 72,
-          right: 72
-        }
+          right: 72,
+        },
       });
-      
+
       doc.image(img, {
         fit: [468, 468],
         align: "center",
-        valign: "center"
+        valign: "center",
       });
     }
 
@@ -68,7 +66,7 @@ export const handler = async (event) => {
     const form = new FormData();
     form.append("fields[GeneratedPDF]", pdfBuffer, {
       filename: "output.pdf",
-      contentType: "application/pdf"
+      contentType: "application/pdf",
     });
 
     const formHeaders = form.getHeaders();
@@ -76,10 +74,10 @@ export const handler = async (event) => {
     const response = await fetch(fullUrl, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${API_KEY}`,
-        ...formHeaders
+        Authorization: `Bearer ${API_KEY}`,
+        ...formHeaders,
       },
-      body: form
+      body: form,
     });
 
     if (!response.ok) {
@@ -93,7 +91,7 @@ export const handler = async (event) => {
       statusCode: 200,
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Headers": "Content-Type",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
         "Content-Type": "application/json",
       },
@@ -101,18 +99,16 @@ export const handler = async (event) => {
     };
   } catch (error) {
     console.error("Error:", error);
-    
+
     return {
       statusCode: 400,
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Headers": "Content-Type",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ success: false, error: error.message }),
     };
   }
-};
-
 };
