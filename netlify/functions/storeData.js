@@ -61,9 +61,12 @@ export const handler = async (event) => {
     const pdfBuffer = Buffer.from(doc.output("arraybuffer"));
 
     const formData = new FormData();
-    formData.append("file", pdfBuffer, { filename: "output.pdf", contentType: "application/pdf" });
-    formData.append("upload_preset", "unsigned_preset"); 
-    formData.append("cloud_name", "db6hiugnp"); 
+    formData.append("file", pdfBuffer, {
+      filename: "output.pdf",
+      contentType: "application/pdf",
+    });
+    formData.append("upload_preset", "unsigned_preset");
+    formData.append("cloud_name", "db6hiugnp");
 
     const cloudRes = await fetch(
       "https://api.cloudinary.com/v1_1/db6hiugnp/auto/upload",
@@ -73,7 +76,7 @@ export const handler = async (event) => {
     const cloudData = await cloudRes.json();
 
     const pdfUrl = cloudData.res;
-    
+
     // Prepare data for Airtable in the correct format
     const airtableData = {
       records: [
@@ -85,7 +88,6 @@ export const handler = async (event) => {
                 filename: "generated-document.pdf",
               },
             ],
-            NumberOfImages: images.length,
             GeneratedAt: new Date().toISOString(),
           },
         },
