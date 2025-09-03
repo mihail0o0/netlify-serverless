@@ -77,7 +77,6 @@ export const handler = async (event) => {
 
     const pdfUrl = cloudData.res;
 
-    // Prepare data for Airtable in the correct format
     const airtableData = {
       records: [
         {
@@ -88,7 +87,6 @@ export const handler = async (event) => {
                 filename: "generated-document.pdf",
               },
             ],
-            GeneratedAt: new Date().toISOString(),
           },
         },
       ],
