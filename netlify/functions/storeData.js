@@ -1,6 +1,5 @@
 import fetch from "node-fetch";
 import PDFDocument from "pdfkit";
-import fs from "fs";
 
 export const handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
@@ -50,6 +49,11 @@ export const handler = async (event) => {
     headers: {
       Authorization: `Bearer ${API_KEY}`,
     },
+    body: (() => {
+      const form = new FormData();
+      form.append("file", pdfBuffer, "test.pdf");
+      return form;
+    })(),
   });
   const data = await response.json();
 
@@ -60,9 +64,7 @@ export const handler = async (event) => {
       "Access-Control-Allow-Headers": "Content-Type",
     },
     body: (() => {
-      const form = new FormData();
-      form.append("file", pdfBuffer, "test.pdf");
-      return form;
+      return "OK";
     })(),
   };
 };
