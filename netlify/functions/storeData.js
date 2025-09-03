@@ -70,7 +70,9 @@ export const handler = async (event) => {
       { method: "POST", body: formData }
     );
 
-    const pdfUrl = JSON.parse(cloudRes).url;
+    const cloudData = await cloudRes.json();
+
+    const pdfUrl = cloudData.res;
     
     // Prepare data for Airtable in the correct format
     const airtableData = {
