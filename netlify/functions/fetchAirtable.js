@@ -13,21 +13,18 @@ export const handler = async (event) => {
     };
   }
 
-  const API_KEY =
-    "pathxuJGghrYvGJj4.61ae89c2cb92e985809f20fd96bd79d35b2b6590fb63f97059f04f4f6bd2fc03";
-  const URL = "https://api.airtable.com/v0";
-
-  const BASE_ID = "appEgHRWQsvF5F7pL";
-  const TABLE_NAME = "tblChiOS40d8z752f";
-
-  const getImages = `${URL}/${BASE_ID}/${TABLE_NAME}`;
+  const getImages = `${process.env.AIRTABLE_URL}/${process.env.BASE_ID}/${process.env.IMAGES_TABLE_NAME}`;
+  console.log(getImages);
+  console.log(process.env.AIRTABLE_KEY);
 
   const response = await fetch(getImages, {
     headers: {
-      Authorization: `Bearer ${API_KEY}`,
+      Authorization: `Bearer ${process.env.AIRTABLE_KEY}`,
     },
   });
   const data = await response.json();
+
+  console.log(data);
 
   return {
     statusCode: 200,

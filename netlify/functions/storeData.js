@@ -2,6 +2,11 @@ import fetch from "node-fetch";
 import jsPDF from "jspdf";
 import FormData from "form-data";
 
+import { createClient } from "@supabase/supabase-js";
+
+// Initialize Supabase
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY); // server-side
+
 async function urlToBase64(url) {
   const res = await fetch(url);
   const buffer = await res.arrayBuffer();
@@ -14,21 +19,14 @@ export const handler = async (event) => {
       statusCode: 200,
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Headers": "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       },
       body: "OK",
     };
   }
 
-  const API_KEY =
-    "pathxuJGghrYvGJj4.61ae89c2cb92e985809f20fd96bd79d35b2b6590fb63f97059f04f4f6bd2fc03";
-  const URL = "https://api.airtable.com/v0";
-
-  const BASE_ID = "appEgHRWQsvF5F7pL";
-  const TABLE_NAME = "tbl5cmdonx7I3JxZK";
-
-  const fullUrl = `${URL}/${BASE_ID}/${TABLE_NAME}`;
+  const fullUrl = `${process.env.AIRTABLE_URL}/${process.env.BASE_ID}/${process.env.PDFS_TABLE_NAME}`;
 
   try {
     const { images } = JSON.parse(event.body);
@@ -52,7 +50,7 @@ export const handler = async (event) => {
 
       try {
         const base64Img = await urlToBase64(img);
-        
+
         doc.addImage({
           imageData: `data:image/jpeg;base64,${base64Img}`,
           x: (210 - 150) / 2,
@@ -67,23 +65,31 @@ export const handler = async (event) => {
     }
 
     const pdfBuffer = Buffer.from(doc.output("arraybuffer"));
+    const pdfBase64 = pdfBuffer.toString("base64");
+    const filename = `output-${Date.now()}.pdf`;
 
-    const formData = new FormData();
-    formData.append("file", pdfBuffer, {
-      filename: "output.pdf",
-      contentType: "application/pdf",
-    });
-    formData.append("upload_preset", "unsigned_preset");
-    formData.append("cloud_name", "db6hiugnp");
+    // const formData = new FormData();
+    // formData.append("file", pdfBuffer, {
+    //   filename: "output.pdf",
+    //   contentType: "application/pdf",
+    // });
 
-    const cloudRes = await fetch(
-      "https://api.cloudinary.com/v1_1/db6hiugnp/auto/upload",
-      { method: "POST", body: formData }
-    );
+    const { resData, error } = await supabase.storage
+      .from("pdfs")
+      .upload(filename, pdfBuffer, {
+        contentType: "application/pdf",
+        upsert: true,
+      });
 
-    const cloudData = await cloudRes.json();
+    if (error) {
+      console.log(error);
+      return error;
+    }
 
-    const pdfUrl = cloudData.secure_url;
+    const { data: publicUrl } = supabase.storage
+      .from("pdfs")
+      .getPublicUrl(filename);
+
 
     const airtableData = {
       records: [
@@ -91,7 +97,7 @@ export const handler = async (event) => {
           fields: {
             Attachments: [
               {
-                url: `${pdfUrl}`,
+                url: `${publicUrl.publicUrl}`,
                 filename: "generated-document.pdf",
               },
             ],
@@ -103,7 +109,7 @@ export const handler = async (event) => {
     const response = await fetch(fullUrl, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${API_KEY}`,
+        Authorization: `Bearer ${process.env.AIRTABLE_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(airtableData),
@@ -120,7 +126,7 @@ export const handler = async (event) => {
       statusCode: 200,
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Headers": "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
         "Content-Type": "application/json",
       },
@@ -133,7 +139,7 @@ export const handler = async (event) => {
       statusCode: 400,
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Headers": "*",
         "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
         "Content-Type": "application/json",
       },
